@@ -57,9 +57,7 @@ parser.add_argument('--refine', default=False, action='store_true', help='enable
 parser.add_argument('--refiner_model', default='weights/craft_refiner_CTW1500.pth', type=str, help='pretrained refiner model')
 parser.add_argument('--result_folder', default='./result/', type=str, help='folder path to save output images')
 
-
 args = parser.parse_args()
-
 
 """ For test images in a folder """
 image_list, _, _ = file_utils.get_files(args.test_folder)
@@ -110,14 +108,9 @@ def test_net(net, image, text_threshold, link_threshold, low_text, cuda, poly, r
 
     t1 = time.time() - t1
 
-    # render results (optional)
-    ret_score_text = None
-
     if args.show_time : print("\ninfer/postproc time : {:.3f}/{:.3f}".format(t0, t1))
 
     return boxes, polys
-
-
 
 if __name__ == '__main__':
     # load net
@@ -169,5 +162,12 @@ if __name__ == '__main__':
                 box = np.array(box).astype(int)  # Convert to integer
                 str_box = ','.join(map(str, box.flatten()))
                 f.write(str_box + '\n')
+
+        # Draw and save the image with bounding boxes
+        output_image_path = os.path.join(args.result_folder, f"bbox_{filename}.jpg")
+        for box in bboxes:
+            pts = np.array(box, np.int32).reshape((-1, 1, 2))
+            cv2.polylines(image, [pts], isClosed=True, color=(0, 255, 0), thickness=2)  # Green bounding boxes
+        cv2.imwrite(output_image_path, image)
 
     print(f"\nElapsed time: {time.time() - t:.3f} seconds")
