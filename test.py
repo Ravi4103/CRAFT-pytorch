@@ -111,13 +111,11 @@ def test_net(net, image, text_threshold, link_threshold, low_text, cuda, poly, r
     t1 = time.time() - t1
 
     # render results (optional)
-    render_img = score_text.copy()
-    render_img = np.hstack((render_img, score_link))
-    ret_score_text = imgproc.cvt2HeatmapImg(render_img)
+    ret_score_text = None
 
     if args.show_time : print("\ninfer/postproc time : {:.3f}/{:.3f}".format(t0, t1))
 
-    return boxes, polys, ret_score_text
+    return boxes, polys
 
 
 
@@ -158,16 +156,18 @@ if __name__ == '__main__':
 
     # load data
     for k, image_path in enumerate(image_list):
-        print("Test image {:d}/{:d}: {:s}".format(k+1, len(image_list), image_path), end='\r')
+        print(f"Processing image {k + 1}/{len(image_list)}: {image_path}", end='\r')
         image = imgproc.loadImage(image_path)
+        
+        bboxes, polys = test_net(net, image, args.text_threshold, args.link_threshold, args.low_text, args.cuda, args.poly, refine_net)
 
-        bboxes, polys, score_text = test_net(net, image, args.text_threshold, args.link_threshold, args.low_text, args.cuda, args.poly, refine_net)
-
-        # save score text
+        # Save bounding boxes to a .txt file
         filename, file_ext = os.path.splitext(os.path.basename(image_path))
-        mask_file = result_folder + "/res_" + filename + '_mask.jpg'
-        cv2.imwrite(mask_file, score_text)
+        bbox_file = os.path.join(args.result_folder, f"res_{filename}.txt")
+        with open(bbox_file, "w") as f:
+            for box in bboxes:
+                box = np.array(box).astype(int)  # Convert to integer
+                str_box = ','.join(map(str, box.flatten()))
+                f.write(str_box + '\n')
 
-        file_utils.saveResult(image_path, image[:,:,::-1], polys, dirname=result_folder)
-
-    print("elapsed time : {}s".format(time.time() - t))
+    print(f"\nElapsed time: {time.time() - t:.3f} seconds")
