@@ -168,6 +168,7 @@ if __name__ == '__main__':
         for box in bboxes:
             pts = np.array(box, np.int32).reshape((-1, 1, 2))
             cv2.polylines(image, [pts], isClosed=True, color=(0, 255, 0), thickness=2)  # Green bounding boxes
-        cv2.imwrite(output_image_path, image)
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        cv2.imwrite(output_image_path, image_rgb)
 
     print(f"\nElapsed time: {time.time() - t:.3f} seconds")
