@@ -1,10 +1,10 @@
 from collections import namedtuple
-
+from torch.hub import load_state_dict_from_url
+model_urls = {'vgg16_bn': 'https://download.pytorch.org/models/vgg16_bn-6c64b313.pth'}
 import torch
 import torch.nn as nn
 import torch.nn.init as init
 from torchvision import models
-from torchvision.models.vgg import model_urls
 
 def init_weights(modules):
     for m in modules:
