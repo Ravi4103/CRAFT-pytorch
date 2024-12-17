@@ -110,7 +110,11 @@ def test_net(net, image, text_threshold, link_threshold, low_text, cuda, poly, r
         # Get the corresponding region from the score_text heatmap
         box_mask = np.zeros_like(score_text, dtype=np.uint8)
         cv2.fillPoly(box_mask, [np.array(box, dtype=np.int32)], 1)
-        score = np.mean(score_text[box_mask == 1])  # Average score inside the box
+        scores = score_text[box_mask == 1]
+        if len(scores) > 0:
+            confidence_score = np.mean(scores)  # Average score
+        else:
+            confidence_score = 0.0  # Average score inside the box
         confidence_scores.append(score)
 
     t1 = time.time() - t1
