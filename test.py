@@ -149,7 +149,7 @@ if __name__ == '__main__':
         print(f"Processing image {k + 1}/{len(image_list)}: {image_path}", end='\r')
         image = imgproc.loadImage(image_path)
     
-        bboxes, polys = test_net(net, image, args.text_threshold, args.link_threshold, args.low_text, args.cuda, args.poly, refine_net)
+        bboxes, polys, score_text = test_net(net, image, args.text_threshold, args.link_threshold, args.low_text, args.cuda, args.poly, refine_net)
     
         # Save bounding boxes and confidence scores to a .txt file
         filename, file_ext = os.path.splitext(os.path.basename(image_path))
