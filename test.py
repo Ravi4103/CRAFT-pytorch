@@ -151,24 +151,37 @@ if __name__ == '__main__':
     for k, image_path in enumerate(image_list):
         print(f"Processing image {k + 1}/{len(image_list)}: {image_path}", end='\r')
         image = imgproc.loadImage(image_path)
-        
+    
         bboxes, polys = test_net(net, image, args.text_threshold, args.link_threshold, args.low_text, args.cuda, args.poly, refine_net)
-
-        # Save bounding boxes to a .txt file
+    
+        # Save bounding boxes and confidence scores to a .txt file
         filename, file_ext = os.path.splitext(os.path.basename(image_path))
         bbox_file = os.path.join(args.result_folder, f"res_{filename}.txt")
         with open(bbox_file, "w") as f:
-            for box in bboxes:
+            for i, box in enumerate(bboxes):
                 box = np.array(box).astype(int)  # Convert to integer
                 str_box = ','.join(map(str, box.flatten()))
-                f.write(str_box + '\n')
-
-        # Draw and save the image with bounding boxes
-        output_image_path = os.path.join(args.result_folder, f"bbox_{filename}.jpg")
-        for box in bboxes:
-            pts = np.array(box, np.int32).reshape((-1, 1, 2))
-            cv2.polylines(image, [pts], isClosed=True, color=(0, 255, 0), thickness=2)  # Green bounding boxes
+                score = polys[i][-1] if len(polys[i]) > 0 else 0.0  # Confidence score
+                f.write(f"{str_box},{score:.2f}\n")
+    
+        # Draw bounding boxes and confidence scores on the image
+        for i, box in enumerate(bboxes):
+            box = np.array(box).astype(int).reshape((-1, 1, 2))
+            score = polys[i][-1] if len(polys[i]) > 0 else 0.0  # Confidence score
+    
+            # Draw the bounding box
+            cv2.polylines(image, [box], isClosed=True, color=(0, 255, 0), thickness=2)
+    
+            # Put the confidence score as text on the image
+            top_left_corner = tuple(box[0][0])
+            cv2.putText(image, f"{score:.2f}", top_left_corner, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
+    
+        # Convert from BGR to RGB before saving
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        cv2.imwrite(output_image_path, image_rgb)
+    
+        # Save the image with bounding boxes and confidence scores
+        result_image_path = os.path.join(args.result_folder, f"bbox_{filename}.jpg")
+        cv2.imwrite(result_image_path, image_rgb)
+
 
     print(f"\nElapsed time: {time.time() - t:.3f} seconds")
