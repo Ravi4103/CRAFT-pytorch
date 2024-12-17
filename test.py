@@ -171,7 +171,7 @@ if __name__ == '__main__':
     
             # Put the confidence score as text on the image
             top_left_corner = tuple(box[0][0])
-            cv2.putText(image, f"{confidence:.2f}", top_left_corner, cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 0, 255), 1, cv2.LINE_AA)
+            cv2.putText(image, f"{score:.2f}", top_left_corner, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
     
         # Convert from BGR to RGB before saving
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
