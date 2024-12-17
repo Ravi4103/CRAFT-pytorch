@@ -62,9 +62,6 @@ args = parser.parse_args()
 """ For test images in a folder """
 image_list, _, _ = file_utils.get_files(args.test_folder)
 
-result_folder = args.result_folder
-if not os.path.isdir(result_folder):
-    os.makedirs(result_folder)
 
 def test_net(net, image, text_threshold, link_threshold, low_text, cuda, poly, refine_net=None):
     t0 = time.time()
@@ -174,7 +171,7 @@ if __name__ == '__main__':
     
             # Put the confidence score as text on the image
             top_left_corner = tuple(box[0][0])
-            cv2.putText(image, f"{score:.2f}", top_left_corner, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
+            cv2.putText(image, f"{confidence:.2f}", top_left_corner, cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 0, 255), 1, cv2.LINE_AA)
     
         # Convert from BGR to RGB before saving
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
