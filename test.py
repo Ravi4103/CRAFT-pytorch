@@ -158,13 +158,13 @@ if __name__ == '__main__':
             for i, box in enumerate(bboxes):
                 box = np.array(box).astype(int)  # Convert to integer
                 str_box = ','.join(map(str, box.flatten()))
-                score = polys[i][-1] if len(polys[i]) > 0 else 0.0  # Confidence score
+                score = polys[i][-1].item() if isinstance(polys[i][-1], np.ndarray) and polys[i][-1].size == 1 else polys[i][-1] if len(polys[i]) > 0 else 0.0
                 f.write(f"{str_box},{score:.2f}\n")
     
         # Draw bounding boxes and confidence scores on the image
         for i, box in enumerate(bboxes):
             box = np.array(box).astype(int).reshape((-1, 1, 2))
-            score = polys[i][-1] if len(polys[i]) > 0 else 0.0  # Confidence score
+            score = polys[i][-1].item() if isinstance(polys[i][-1], np.ndarray) and polys[i][-1].size == 1 else polys[i][-1] if len(polys[i]) > 0 else 0.0
     
             # Draw the bounding box
             cv2.polylines(image, [box], isClosed=True, color=(0, 255, 0), thickness=2)
