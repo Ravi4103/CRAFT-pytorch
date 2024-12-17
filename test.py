@@ -150,6 +150,20 @@ if __name__ == '__main__':
         image = imgproc.loadImage(image_path)
     
         bboxes, polys, score_text = test_net(net, image, args.text_threshold, args.link_threshold, args.low_text, args.cuda, args.poly, refine_net)
+        for k in range(len(polys)):
+        print(f"Inspecting polys[{k}]: {polys[k]}")
+
+        # Check if polys[k] has enough elements and if the last element is a confidence score
+        if isinstance(polys[k], list) and len(polys[k]) > 0:
+            print(f"Last element of polys[{k}]: {polys[k][-1]}")
+            
+            # Check if the last element is a float (confidence score)
+            if isinstance(polys[k][-1], (float, np.float32, np.float64)):
+                print(f"Confidence score detected: {polys[k][-1]}")
+            else:
+                print("No confidence score found in polys[k]")
+        else:
+            print("Invalid or empty polys[k]")
     
         # Save bounding boxes and confidence scores to a .txt file
         filename, file_ext = os.path.splitext(os.path.basename(image_path))
@@ -159,13 +173,24 @@ if __name__ == '__main__':
                 box = np.array(box).astype(int)  # Convert to integer
                 str_box = ','.join(map(str, box.flatten()))
                 score = polys[i][-1].item() if isinstance(polys[i][-1], np.ndarray) and polys[i][-1].size == 1 else polys[i][-1] if len(polys[i]) > 0 else 0.0
+                if isinstance(score, np.ndarray):
+                    if score.size == 1:  # If it contains only one element, extract it
+                        score = score.item()
+                    else:  # Handle multi-element array (unexpected case)
+                        score = score[0]  # Use the first element (or define another behavior)
+
                 f.write(f"{str_box},{score:.2f}\n")
     
         # Draw bounding boxes and confidence scores on the image
         for i, box in enumerate(bboxes):
             box = np.array(box).astype(int).reshape((-1, 1, 2))
             score = polys[i][-1].item() if isinstance(polys[i][-1], np.ndarray) and polys[i][-1].size == 1 else polys[i][-1] if len(polys[i]) > 0 else 0.0
-    
+            if isinstance(score, np.ndarray):
+                if score.size == 1:  # If it contains only one element, extract it
+                    score = score.item()
+                else:  # Handle multi-element array (unexpected case)
+                    score = score[0]  # Use the first element (or define another behavior)
+
             # Draw the bounding box
             cv2.polylines(image, [box], isClosed=True, color=(0, 255, 0), thickness=2)
     
