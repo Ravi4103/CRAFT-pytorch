@@ -176,7 +176,7 @@ if __name__ == '__main__':
                 str_box = ','.join(map(str, box.flatten()))
                 
                 # Extract confidence score and handle any issues with its type
-                score = polys[i][-1] if len(polys[i]) > 0 else 0.0  # Ensure it's not empty
+                score = confidence_scores[i]
                 if isinstance(score, np.ndarray):
                     if score.size == 1:  # Single-element array
                         score = score.item()
@@ -192,6 +192,12 @@ if __name__ == '__main__':
         for i, box in enumerate(bboxes):
             box = np.array(box).astype(int).reshape((-1, 1, 2))
             score = confidence_scores[i]
+                if isinstance(score, np.ndarray):
+                    if score.size == 1:  # Single-element array
+                        score = score.item()
+                    else:
+                        print("Warning: Multi-element array found for score, defaulting to 0.0")
+                        score = 0.0  # Default value in case of an unexpected array structure
 
             # Draw the bounding box
             cv2.polylines(image, [box], isClosed=True, color=(0, 255, 0), thickness=2)
