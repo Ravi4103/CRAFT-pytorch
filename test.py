@@ -167,15 +167,26 @@ if __name__ == '__main__':
         
     
         # Save bounding boxes and confidence scores to a .txt file
+        # Save bounding boxes and confidence scores to a .txt file
         filename, file_ext = os.path.splitext(os.path.basename(image_path))
         bbox_file = os.path.join(args.result_folder, f"res_{filename}.txt")
         with open(bbox_file, "w") as f:
             for i, box in enumerate(bboxes):
                 box = np.array(box).astype(int)  # Convert to integer
                 str_box = ','.join(map(str, box.flatten()))
-                score = confidence_scores[i]
+                
+                # Extract confidence score and handle any issues with its type
+                score = polys[i][-1] if len(polys[i]) > 0 else 0.0  # Ensure it's not empty
+                if isinstance(score, np.ndarray):
+                    if score.size == 1:  # Single-element array
+                        score = score.item()
+                    else:
+                        print("Warning: Multi-element array found for score, defaulting to 0.0")
+                        score = 0.0  # Default value in case of an unexpected array structure
+        
+        # Write the bounding box and score to the file
+        f.write(f"{str_box},{score:.2f}\n")
 
-                f.write(f"{str_box},{score:.2f}\n")
     
         # Draw bounding boxes and confidence scores on the image
         for i, box in enumerate(bboxes):
