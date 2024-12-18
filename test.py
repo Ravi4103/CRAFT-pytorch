@@ -8,7 +8,7 @@ import sys
 import os
 import time
 import argparse
-
+from google.colab.patches import cv2_imshow
 import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
@@ -108,11 +108,10 @@ def test_net(net, image, text_threshold, link_threshold, low_text, cuda, poly, r
         # Get the corresponding region from the score_text heatmap
         box_mask = np.zeros_like(score_text, dtype=np.uint8)
         cv2.fillPoly(box_mask, [np.array(box, dtype=np.int32)], 1)
-        cv2_imshow("box_mask", box_mask * 255)
-        cv2.waitKey(0)
+        cv2_imshow(box_mask * 255)
         scores = score_text[box_mask == 1]
         if len(scores) > 0:
-            confidence_score = np.mean(scores)  # Average score
+            confidence_score = np.max(scores)  # Max score
         else:
             confidence_score = 0.0  # Average score inside the box
         confidence_scores.append(scores)
