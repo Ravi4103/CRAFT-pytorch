@@ -181,11 +181,11 @@ if __name__ == '__main__':
                     if score.size == 1:  # Single-element array
                         score = score.item()
                     else:
-                        print("Warning: Multi-element array found for score, defaulting to 0.0")
-                        score = 0.0  # Default value in case of an unexpected array structure
+                         score = np.mean(score)
+                         # Default value in case of an unexpected array structure
         
-        # Write the bounding box and score to the file
-        f.write(f"{str_box},{score:.2f}\n")
+                # Write the bounding box and score to the file
+                f.write(f"{str_box},{score:.2f}\n")
 
     
         # Draw bounding boxes and confidence scores on the image
@@ -196,8 +196,7 @@ if __name__ == '__main__':
                     if score.size == 1:  # Single-element array
                         score = score.item()
                     else:
-                        print("Warning: Multi-element array found for score, defaulting to 0.0")
-                        score = 0.0  # Default value in case of an unexpected array structure
+                         score = np.mean(score)  # Default value in case of an unexpected array structure
 
             # Draw the bounding box
             cv2.polylines(image, [box], isClosed=True, color=(0, 255, 0), thickness=2)
