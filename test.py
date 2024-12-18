@@ -84,6 +84,7 @@ def test_net(net, image, text_threshold, link_threshold, low_text, cuda, poly, r
     # make score and link map
     score_text = y[0,:,:,0].cpu().data.numpy()
     score_link = y[0,:,:,1].cpu().data.numpy()
+    print(np.min(score_text), np.max(score_text), np.mean(score_text))
 
     # refine link
     if refine_net is not None:
@@ -100,9 +101,6 @@ def test_net(net, image, text_threshold, link_threshold, low_text, cuda, poly, r
     # coordinate adjustment
     boxes = craft_utils.adjustResultCoordinates(boxes, ratio_w, ratio_h)
     polys = craft_utils.adjustResultCoordinates(polys, ratio_w, ratio_h)
-    height, width = score_text.shape  # Get dimensions of the score_text heatmap
-    for i, box in enumerate(boxes):
-        boxes[i] = np.clip(np.array(box, dtype=np.int32), [0, 0], [width - 1, height - 1])
     for k in range(len(polys)):
         if polys[k] is None: polys[k] = boxes[k]
     confidence_scores = []
@@ -110,6 +108,8 @@ def test_net(net, image, text_threshold, link_threshold, low_text, cuda, poly, r
         # Get the corresponding region from the score_text heatmap
         box_mask = np.zeros_like(score_text, dtype=np.uint8)
         cv2.fillPoly(box_mask, [np.array(box, dtype=np.int32)], 1)
+        cv2_imshow("box_mask", box_mask * 255)
+        cv2.waitKey(0)
         scores = score_text[box_mask == 1]
         if len(scores) > 0:
             confidence_score = np.mean(scores)  # Average score
