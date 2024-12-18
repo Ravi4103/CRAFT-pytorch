@@ -115,7 +115,7 @@ def test_net(net, image, text_threshold, link_threshold, low_text, cuda, poly, r
             confidence_score = np.mean(scores)  # Average score
         else:
             confidence_score = 0.0  # Average score inside the box
-        confidence_scores.append(score)
+        confidence_scores.append(scores)
 
     t1 = time.time() - t1
 
@@ -192,11 +192,11 @@ if __name__ == '__main__':
         for i, box in enumerate(bboxes):
             box = np.array(box).astype(int).reshape((-1, 1, 2))
             score = confidence_scores[i]
-                if isinstance(score, np.ndarray):
-                    if score.size == 1:  # Single-element array
-                        score = score.item()
-                    else:
-                         score = np.mean(score)  # Default value in case of an unexpected array structure
+            if isinstance(score, np.ndarray):
+                if score.size == 1:  # Single-element array
+                    score = score.item()
+                else:
+                     score = np.mean(score)  # Default value in case of an unexpected array structure
 
             # Draw the bounding box
             cv2.polylines(image, [box], isClosed=True, color=(0, 255, 0), thickness=2)
