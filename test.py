@@ -180,7 +180,7 @@ if __name__ == '__main__':
                     if score.size == 1:  # Single-element array
                         score = score.item()
                     else:
-                         score = np.mean(score)
+                         score = np.max(score)
                          # Default value in case of an unexpected array structure
         
                 # Write the bounding box and score to the file
@@ -195,14 +195,14 @@ if __name__ == '__main__':
                 if score.size == 1:  # Single-element array
                     score = score.item()
                 else:
-                     score = np.mean(score)  # Default value in case of an unexpected array structure
+                     score = np.max(score)  # Default value in case of an unexpected array structure
 
             # Draw the bounding box
             cv2.polylines(image, [box], isClosed=True, color=(0, 255, 0), thickness=2)
     
             # Put the confidence score as text on the image
             top_left_corner = tuple(box[0][0])
-            cv2.putText(image, f"{score:.2f}", top_left_corner, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
+            cv2.putText(image, f"{score:.2f}", top_left_corner, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv2.LINE_AA)
     
         # Convert from BGR to RGB before saving
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
