@@ -180,7 +180,7 @@ if __name__ == '__main__':
                     if score.size == 1:  # Single-element array
                         score = score.item()
                     else:
-                         score = np.max(score)
+                         score = np.mean(score)
                          # Default value in case of an unexpected array structure
         
                 # Write the bounding box and score to the file
@@ -195,7 +195,7 @@ if __name__ == '__main__':
                 if score.size == 1:  # Single-element array
                     score = score.item()
                 else:
-                     score = np.max(score)  # Default value in case of an unexpected array structure
+                     score = np.mean(score)  # Default value in case of an unexpected array structure
 
             # Draw the bounding box
             cv2.polylines(image, [box], isClosed=True, color=(0, 255, 0), thickness=2)
