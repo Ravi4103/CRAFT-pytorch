@@ -105,18 +105,10 @@ def test_net(net, image, text_threshold, link_threshold, low_text, cuda, poly, r
         if polys[k] is None: polys[k] = boxes[k]
     confidence_scores = []
     for box in boxes:
-        # Get the corresponding region from the score_text heatmap
         box_mask = np.zeros_like(score_text, dtype=np.uint8)
         cv2.fillPoly(box_mask, [np.array(box, dtype=np.int32)], 1)
-        cv2_imshow(box_mask * 255)
         scores = score_text[box_mask == 1]
-        if len(scores) > 0:
-            confidence_score = np.max(scores)  # Max score
-        else:
-            confidence_score = 0.0  # Average score inside the box
-        confidence_scores.append(scores)
-
-    t1 = time.time() - t1
+        confidence_scores.append(np.max(scores) if len(scores) > 0 else 0.0)
 
     if args.show_time : print("\ninfer/postproc time : {:.3f}/{:.3f}".format(t0, t1))
 
@@ -161,55 +153,20 @@ if __name__ == '__main__':
     for k, image_path in enumerate(image_list):
         print(f"Processing image {k + 1}/{len(image_list)}: {image_path}", end='\r')
         image = imgproc.loadImage(image_path)
-    
+        
         bboxes, polys, confidence_scores = test_net(net, image, args.text_threshold, args.link_threshold, args.low_text, args.cuda, args.poly, refine_net)
-        
-    
-        # Save bounding boxes and confidence scores to a .txt file
-        # Save bounding boxes and confidence scores to a .txt file
-        filename, file_ext = os.path.splitext(os.path.basename(image_path))
-        bbox_file = os.path.join(args.result_folder, f"res_{filename}.txt")
-        with open(bbox_file, "w") as f:
-            for i, box in enumerate(bboxes):
-                box = np.array(box).astype(int)  # Convert to integer
-                str_box = ','.join(map(str, box.flatten()))
-                
-                # Extract confidence score and handle any issues with its type
-                score = confidence_scores[i]
-                if isinstance(score, np.ndarray):
-                    if score.size == 1:  # Single-element array
-                        score = score.item()
-                    else:
-                         score = np.mean(score)
-                         # Default value in case of an unexpected array structure
-        
-                # Write the bounding box and score to the file
-                f.write(f"{str_box},{score:.2f}\n")
 
-    
-        # Draw bounding boxes and confidence scores on the image
-        for i, box in enumerate(bboxes):
-            box = np.array(box).astype(int).reshape((-1, 1, 2))
-            score = confidence_scores[i]
-            if isinstance(score, np.ndarray):
-                if score.size == 1:  # Single-element array
-                    score = score.item()
-                else:
-                     score = np.mean(score)  # Default value in case of an unexpected array structure
+        # Draw bounding boxes and confidence scores
+        for box, confidence in zip(bboxes, confidence_scores):
+            box = np.array(box).astype(int)  # Convert to integer
+            pts = box.reshape((-1, 2))
+            cv2.polylines(image, [pts], True, (0, 255, 0), 2)
+            text_position = (pts[0][0], pts[0][1] - 10)
+            cv2.putText(image, f"{confidence:.2f}", text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1)
 
-            # Draw the bounding box
-            cv2.polylines(image, [box], isClosed=True, color=(0, 255, 0), thickness=2)
-    
-            # Put the confidence score as text on the image
-            top_left_corner = tuple(box[0][0])
-            cv2.putText(image, f"{score:.2f}", top_left_corner, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv2.LINE_AA)
-    
-        # Convert from BGR to RGB before saving
+        # Save updated image
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    
-        # Save the image with bounding boxes and confidence scores
-        result_image_path = os.path.join(args.result_folder, f"bbox_{filename}.jpg")
-        cv2.imwrite(result_image_path, image_rgb)
-
+        output_image_path = os.path.join(args.result_folder, os.path.basename(image_path))
+        cv2.imwrite(output_image_path, image_rgb)
 
     print(f"\nElapsed time: {time.time() - t:.3f} seconds")
