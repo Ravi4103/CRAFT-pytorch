@@ -162,7 +162,7 @@ if __name__ == '__main__':
             pts = box.reshape((-1, 2))
             cv2.polylines(image, [pts], True, (0, 255, 0), 2)
             text_position = (pts[0][0], pts[0][1] - 10)
-            cv2.putText(image, f"{confidence:.2f}", text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1)
+            cv2.putText(image, f"{confidence:.2f}", text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1)
 
         # Save updated image
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
