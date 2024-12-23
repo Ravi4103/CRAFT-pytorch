@@ -5,6 +5,7 @@ MIT License
 
 # -*- coding: utf-8 -*-
 import numpy as np
+import os
 import cv2
 import math
 
@@ -224,7 +225,7 @@ def getPoly_core(boxes, labels, mapper, linkmap):
 
     return polys
 
-def getDetBoxes(textmap, linkmap, text_threshold, link_threshold, low_text, poly=False):
+def getDetBoxes(textmap, linkmap, text_threshold, link_threshold, low_text, poly=False, image=None, output_path=None):
     boxes, labels, mapper = getDetBoxes_core(textmap, linkmap, text_threshold, link_threshold, low_text)
 
     if poly:
@@ -232,7 +233,29 @@ def getDetBoxes(textmap, linkmap, text_threshold, link_threshold, low_text, poly
     else:
         polys = [None] * len(boxes)
 
-    return boxes, polys
+    confidence_scores = []
+    for box in boxes:
+        # Create a mask for the box
+        box_mask = np.zeros_like(textmap, dtype=np.uint8)
+        cv2.fillPoly(box_mask, [np.array(box, dtype=np.int32)], 1)
+        # Extract confidence scores from textmap within the mask
+        scores = textmap[box_mask == 1]
+        confidence_scores.append(np.max(scores) if len(scores) > 0 else 0.0)
+
+    if image is not None:
+        for box, confidence in zip(boxes, confidence_scores):
+            box = np.array(box).astype(int)  # Convert to integer
+            pts = box.reshape((-1, 2))
+            cv2.polylines(image, [pts], True, (0, 255, 0), 2)  # Draw the bounding box
+            text_position = (pts[0][0], pts[0][1] - 10)
+            cv2.putText(image, f"{confidence:.2f}", text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1)
+            
+        if output_path:
+            output_dir = os.path.dirname(output_path)
+            os.makedirs(output_dir, exist_ok=True)
+            cv2.imwrite(output_path, image)
+
+    return boxes, polys, confidence_scores
 
 def adjustResultCoordinates(polys, ratio_w, ratio_h, ratio_net = 2):
     if len(polys) > 0:
